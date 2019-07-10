@@ -25,6 +25,6 @@ public class TestController {
      */
     @GetMapping("/sayHello")
     public String sayHello(String name){
-        return "hello," + name;
+        return "hello," + name + ". I am tag2";
     }
 }
