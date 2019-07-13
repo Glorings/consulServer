@@ -2,9 +2,17 @@ package com.example.consulserver.controller;
 
 
 
+import com.alibaba.fastjson.JSON;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class TestController {
@@ -27,4 +35,33 @@ public class TestController {
     public String sayHello(String name){
         return "hello," + name + ". I am tag2";
     }
+
+
+    @GetMapping("/test/cookie")
+    public String testGateway(HttpServletRequest request, HttpServletResponse response){
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                System.out.println(cookie.getName()+":"+cookie.getValue());
+            }
+        }
+        return "Spring Cloud Gateway,Hello world!";
+    }
+
+    /**
+     * 测试Cookies路由断言工厂
+     * @param request
+     * @param response
+     * @return
+     */
+    @GetMapping("/test/cookie2")
+    public String cookie2(HttpServletRequest request, HttpServletResponse response){
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        Object user = servletRequestAttributes.getAttribute("user", RequestAttributes.SCOPE_SESSION);
+        Object user2= servletRequestAttributes.getAttribute("user", RequestAttributes.SCOPE_REQUEST);
+        System.out.println(JSON.toJSONString(user));
+        System.out.println(JSON.toJSONString(user2));
+        return "TTTT!";
+    }
+
 }
