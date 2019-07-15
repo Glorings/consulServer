@@ -112,7 +112,9 @@ public class TestController {
 
     @GetMapping(value = "/v2")
     public String v2() {
+        System.out.println("1111");
         return "v2";
     }
+
 
 }
