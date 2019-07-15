@@ -13,10 +13,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 public class TestController {
+
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    ConcurrentHashMap<String, AtomicInteger> map = new ConcurrentHashMap<>();
 
     /**
      * 注意：新版Spring Cloud Consul 默认注册健康检查接口为：/actuator/health
@@ -62,6 +66,38 @@ public class TestController {
         System.out.println(JSON.toJSONString(user));
         System.out.println(JSON.toJSONString(user2));
         return "TTTT!";
+    }
+
+    /**
+     * @param request
+     * @param response
+     * @return
+     */
+    @GetMapping("/test/head")
+    public String testGatewayHead(HttpServletRequest request, HttpServletResponse response){
+        String head=request.getHeader("X-Request-Acme");
+        return "return head info:"+head;
+    }
+
+    @GetMapping("/test/addRequestParameter")
+    public String addRequestParameter(HttpServletRequest request, HttpServletResponse response){
+        String parameter=request.getParameter("example");
+        return "return addRequestParameter info:"+parameter;
+    }
+
+    @GetMapping("/retry")
+    public String testRetryByException(@RequestParam("key") String key, @RequestParam(name = "count") int count) {
+        AtomicInteger num = map.computeIfAbsent(key, s -> new AtomicInteger());
+        //对请求或重试次数计数
+        int i = num.incrementAndGet();
+        logger.warn("重试次数: "+i);
+        //计数i小于重试次数2抛出异常，让Spring Cloud Gateway进行重试
+        if (i < count) {
+            throw new RuntimeException("Deal with failure, please try again!");
+        }
+        //当重试两次时候，清空计数，返回重试两次成功
+        map.clear();
+        return "重试"+count+"次成功！";
     }
 
 }
