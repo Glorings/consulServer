@@ -100,4 +100,9 @@ public class TestController {
         return "重试"+count+"次成功！";
     }
 
+    @GetMapping("/customFilter")
+    public String customFilter(@RequestParam String name) {
+        return "customFilter, " + name + "!";
+    }
+
 }
